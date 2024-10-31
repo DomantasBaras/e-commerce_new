@@ -64,4 +64,32 @@ footer {
   padding: 10px;
   position: absolute;
 }
+/* Adjust padding for smaller screens */
+@media (max-width: 768px) {
+  .content {
+    padding: 10px;
+  }
+}
+/* Additional responsive styles for footer */
+@media (max-width: 768px) {
+  footer {
+    padding: 15px;
+  }
+}
+
+/* Navbar responsiveness */
+nav {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #333;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: center;
+  }
+}
 </style>

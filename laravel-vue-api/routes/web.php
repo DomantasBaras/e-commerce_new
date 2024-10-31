@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -68,4 +69,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Route for search suggestions (AJAX)
+Route::get('/api/search', [SearchController::class, 'search'])->name('search.api');
+
+// Route for showing search results
+Route::get('/search/results', [SearchController::class, 'showResults'])->name('search.results');
 require __DIR__.'/auth.php';
