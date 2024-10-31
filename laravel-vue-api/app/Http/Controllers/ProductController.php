@@ -6,6 +6,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Services\ElasticsearchService;
 
 class ProductController extends Controller
 {
@@ -99,6 +100,21 @@ class ProductController extends Controller
 
         $product->delete();
         return response()->json(null, 204);
+    }
+
+    protected $elasticsearch;
+
+    public function __construct(ElasticsearchService $elasticsearch)
+    {
+        $this->elasticsearch = $elasticsearch;
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $results = $this->elasticsearch->search('products', $query);
+
+        return view('products.index', ['products' => $results['hits']['hits']]);
     }
 }
 
