@@ -1,37 +1,55 @@
 <template>
   <main-layout>
     <template v-slot:default>
-      <div v-if="product" class="product-detail">
-        <h2 class="product-title">{{ product.name }}</h2>
-        <img class="product-image" :src="productImage" alt="Product Image" />
-        <div class="product-info">
-          <p>{{ product.description }}</p>
-          <p class="product-price">Price: ${{ product.price }}</p>
-          <p class="product-stock">Stock: {{ product.stock }}</p>
+      <div v-if="product" class="product-detail-page">
+        <!-- Left: Large Product Image -->
+        <div class="product-image-section">
+          <img :src="productImage" alt="Product Image" class="product-image" />
         </div>
-        <form @submit.prevent="updateProductData" enctype="multipart/form-data">
-          <label>
-            Name:
-            <input v-model="product.name" type="text" />
-          </label>
-          <label>
-            Description:
-            <input v-model="product.description" type="text" />
-          </label>
-          <label>
-            Price:
-            <input v-model="product.price" type="number" />
-          </label>
-          <label>
-            Stock:
-            <input v-model="product.stock" type="number" />
-          </label>
-          <label>
-            Image:
-            <input @change="handleFileUpload" type="file" />
-          </label>
-          <button type="submit">Update Product</button>
-        </form>
+
+        <!-- Center: Product Details -->
+        <div class="product-info-section">
+          <h2 class="product-title">{{ product.name }}</h2>
+          <div class="description-wrapper">
+            <p>
+              {{ showFullDescription ? product.description : truncatedDescription }}
+              <button v-if="isDescriptionLong" @click="toggleDescription" class="show-more-btn">
+                {{ showFullDescription ? 'Show Less' : 'Show More' }}
+              </button>
+            </p>
+          </div>
+          <p class="product-price">Price: €{{ product.price }}</p>
+
+          <div class="product-specifications">
+            <h3>Specifications:</h3>
+            <table>
+              <tr v-for="(value, key) in product.specifications" :key="key">
+                <td>{{ key }}:</td>
+                <td>{{ value }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right: Action Buttons -->
+        <div class="product-action-section">
+          <div class="quantity-selector">
+            <label for="quantity">Quantity:</label>
+            <input type="number" v-model="quantity" min="1" :max="product.stock" />
+          </div>
+
+          <primary-button class="primary-button" @click="addToCart">
+            Add to Cart
+          </primary-button>
+
+          <primary-button class="secondary-button" @click="notifyPriceDrop">
+            Notify when price drops
+          </primary-button>
+
+          <primary-button class="tertiary-button" @click="askQuestion">
+            Ask a Question
+          </primary-button>
+        </div>
       </div>
       <div v-else>
         <p>Loading...</p>
@@ -41,24 +59,34 @@
 </template>
 
 <script>
-import MainLayout from '@/Layouts/MainLayout.vue';
-import axios from 'axios';
+import MainLayout from "@/Layouts/MainLayout.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+
 export default {
-  props: ['id'],
+  props: ["id"],
   components: {
     MainLayout,
+    PrimaryButton,
   },
   data() {
     return {
       product: null,
-      selectedFile: null,
-      errorMessage: null
+      quantity: 1,
+      showFullDescription: false,
     };
   },
   computed: {
     productImage() {
-      return this.product && this.product.image ? `/storage/${this.product.image}` : '';
-    }
+      return this.product && this.product.image ? `/storage/${this.product.image}` : '/storage/no-image-icon.png';
+    },
+    truncatedDescription() {
+      return this.product.description.length > 150
+        ? this.product.description.substring(0, 150) + "..."
+        : this.product.description;
+    },
+    isDescriptionLong() {
+      return this.product.description.length > 150;
+    },
   },
   created() {
     this.fetchProduct();
@@ -68,119 +96,147 @@ export default {
       try {
         const response = await fetch(`/api/products/${this.id}`);
         if (!response.ok) throw new Error(`Failed to fetch product: ${response.statusText}`);
-
         this.product = await response.json();
       } catch (error) {
-        console.error('Failed to fetch product:', error);
+        console.error("Failed to fetch product:", error);
       }
     },
-    handleFileUpload(event) {
-      this.selectedFile = event.target.files[0];
+    addToCart() {
+      console.log(`Adding ${this.quantity} of product ID ${this.product.id} to cart.`);
     },
-   
-    async updateProductData() {
-        try {
-            // Prepare the product data
-            const productData = {
-                name: this.product.name,
-                description: this.product.description,
-                price: this.product.price,
-                stock: this.product.stock
-            };
-
-            // Send the PUT request with JSON data
-            const response = await fetch(`/api/products/${this.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(productData)
-            });
-
-            const data = await response.json();
-            console.log('Product data updated successfully:', data);
-
-            // If there is a selected file, proceed to update the image
-            if (this.selectedFile) {
-                await this.updateProductImage();
-            }
-        } catch (error) {
-            console.error('Error updating product data:', error);
-        }
+    notifyPriceDrop() {
+      console.log("User subscribed to price drop notifications for this product.");
     },
-    async updateProductImage() {
-    try {
-        // Create a FormData object to handle file upload
-        const formData = new FormData();
-        formData.append('image', this.selectedFile);
-        console.log('formData values:', formData);
-        // Send the POST request to update the product image
-        const response = await fetch(`/api/products/${this.id}/image`, {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-        console.log('Product image updated successfully:', data);
-    } catch (error) {
-        console.error('Error updating product image:', error);
-    }
-}
-
-
-  }
+    askQuestion() {
+      console.log("User wants to ask a question about this product.");
+    },
+    toggleDescription() {
+      this.showFullDescription = !this.showFullDescription;
+    },
+  },
 };
 </script>
 
-
 <style scoped>
-/* Your styles remain the same */
-.product-detail {
+.product-detail-page {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease;
-  max-width: 800px;
-  margin: 20px auto;
+  gap: 20px;
 }
 
-.product-detail:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.product-title {
-  margin: 0 0 20px;
-  font-size: 2em;
-  font-weight: bold;
-  text-align: center;
+.product-image-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .product-image {
-  width: 100%;
+  max-width: 100%;
   height: auto;
-  display: block;
-  margin: 0 auto 20px;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
-.product-info {
-  text-align: center;
+.product-info-section {
+  flex: 2;
+  padding: 20px;
 }
 
-.product-info p {
-  margin: 10px 0;
+.product-title {
+  font-size: 1.8em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
 }
 
 .product-price {
   font-size: 1.5em;
   color: #4a90e2;
+  margin: 1em 0;
 }
 
-.product-stock {
-  font-size: 1.2em;
-  color: #7b7b7b;
+.description-wrapper {
+  max-width: 600px;
+  word-wrap: break-word;
+}
+
+.show-more-btn {
+  background: none;
+  border: none;
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 12px;
+}
+
+.product-specifications table {
+  width: 100%;
+  margin-top: 0.5em;
+  border-collapse: collapse;
+}
+
+.product-specifications td {
+  padding: 5px;
+  border-bottom: 1px solid #ddd;
+}
+
+.product-action-section {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.primary-button,
+.secondary-button,
+.tertiary-button {
+  padding: 12px;
+  font-size: 1em;
+  text-align: center;
+  cursor: pointer;
+}
+
+.primary-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+}
+
+.secondary-button {
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+}
+
+.tertiary-button {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+/* Mobile styling */
+@media (max-width: 960px) {
+  .product-detail-page {
+    flex-direction: column;
+    align-items: center;
+  }
+  .product-image {
+    width: 80%;
+    max-width: 400px;
+  }
+  .description-wrapper {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5em;
+    max-height: 3em;
+  }
+  .description-wrapper p.expanded {
+    white-space: normal;
+    max-height: none;
+  }
 }
 </style>

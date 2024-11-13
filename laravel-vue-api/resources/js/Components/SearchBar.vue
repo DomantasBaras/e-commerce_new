@@ -112,7 +112,7 @@ const deactivateSearch = () => {
   height: 40px;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 4px 0 0 4px;
+  border-radius: 4px 4px 4px 4px;
   background-color: transparent;
   color: #333;
   transition: width 0.5s ease, padding 0.5s ease, border-color 0.3s ease;
