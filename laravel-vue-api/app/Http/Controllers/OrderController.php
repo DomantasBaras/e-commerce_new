@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class OrderController extends Controller
 {
@@ -70,5 +71,22 @@ class OrderController extends Controller
     {
         $order = Order::with('items.product')->findOrFail($id);
         return view('order.show', compact('order'));
+    }
+    public function index()
+    {
+        $products = Product::all();
+        return response()->json($products);
+    }
+    public function adminIndex()
+    {
+        return view('admin.orders.index');
+    }
+
+    public function edit($id)
+    {
+        $order = Order::findOrFail($id);
+        return Inertia::render('Admin/OrdertForm', [
+            'order' => $order
+        ]);
     }
 }

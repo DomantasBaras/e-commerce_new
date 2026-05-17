@@ -43,7 +43,7 @@ export const useCartStore = defineStore('cartStore', {
           this.cart = { items: cartItems };
         }
 
-        console.log('Cart fetched successfully:', this.cart);
+      //  console.log('Cart fetched successfully:', this.cart);
       } catch (error) {
         console.error('Error fetching cart:', error);
       } finally {

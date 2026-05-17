@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Exportable;
 
 class Cart extends Model
 {
     use HasFactory;
+    use Exportable;
 
     // Define the fillable fields
     protected $fillable = ['user_id'];

@@ -77,8 +77,10 @@
             <a :href="route('register')" class="register-link">Register</a>
           </div>
           <div v-else class="user-menu">
-            <a :href="route('profile.edit')"><i class="fas fa-user-circle"></i> {{ props.auth.user.name }}</a>
-            <a href="#" @click.prevent="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <div class="user-info">
+              <ResponsiveNavLink :href="route('profile.edit')"><i class="fas fa-user-circle"></i> {{ props.auth.user.name }}</ResponsiveNavLink>
+              <ResponsiveNavLink :href="route('logout')"  as="button" method="post"><i class="fas fa-sign-out-alt"></i> Logout</ResponsiveNavLink>
+            </div>
           </div>
         </div>
       </div>
@@ -93,6 +95,7 @@ import ApplicationLogo from './ApplicationLogo.vue';
 import ResponsiveNavLink from './ResponsiveNavLink.vue';
 import SearchBar from './SearchBar.vue';
 import { useCartStore } from '../Stores/cartStore';
+import PrimaryButton from '../Components/PrimaryButton.vue';
 
 const cartStore = useCartStore();
 const { props } = usePage();
@@ -126,11 +129,7 @@ const removeItem = async (cartItemId) => {
 // Handle logout
 const logout = async () => {
   try {
-    await form.post(route('logout'), {
-      onFinish: () => {
-        emit('auth-changed');
-      },
-    });
+    this.$inertia.post(`logout`);
   } catch (error) {
     console.error('Logout error:', error);
   }

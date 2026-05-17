@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Services\ElasticsearchService;
+use Inertia\Inertia;
+use App\Models\User;
 
 class ProductController extends Controller
 {
@@ -41,16 +43,14 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Log the entire request content and headers
-        Log::info('Update request data:', $request->all());
-        Log::info("Update request received for product ID: $id");
-
         // Find the product by ID
         $product = Product::find($id);
 
         if ($product) {
-            Log::info('Product found: ', $product->toArray());
-
+            // Store original data before updating
+            $originalData = $product->getOriginal();
+      //      Log::info('request data:', ['request' => $request]);
+     //       Log::info('Original data:', ['originalData' => $originalData]);
             // Validate the incoming request data
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
@@ -59,16 +59,18 @@ class ProductController extends Controller
                 'stock' => 'required|integer|min:0',
             ]);
 
-            // Update the product with validated data
+            // Update the product
             $product->update($validatedData);
 
-            Log::info('Product updated successfully: ', $product->toArray());
-
-            return response()->json($product);
-        } else {
-            return response()->json(['error' => 'Product not found'], 404);
+            return response()->json([
+                'product' => $product,
+                'original' => $originalData,
+            ]);
         }
+
+        return response()->json(['error' => 'Product not found'], 404);
     }
+
     public function updateImage(Request $request, Product $product)
     {
         $request->validate([
@@ -116,6 +118,26 @@ class ProductController extends Controller
 
         return view('products.index', ['products' => $results['hits']['hits']]);
     }
+
+    public function adminIndex()
+    {
+        return view('admin.products.index');
+    }
+
+    public function create()
+    {
+        return Inertia::render('Admin/ProductForm');
+    }
+
+    // Show edit form with product data
+    public function edit($id)
+    {
+        $product = Product::findOrFail($id);
+        return Inertia::render('Admin/ProductForm', [
+            'product' => $product
+        ]);
+    }
+
 }
 
 

@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
+use App\Traits\Exportable;
 
 class Product extends Model
 {
     use HasFactory;
+    use Exportable;
     use Searchable;
     protected $fillable = ['name', 'description', 'price', 'stock', 'image']; // Include 'image'
 

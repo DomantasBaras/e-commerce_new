@@ -24,17 +24,19 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        // Authenticate the user
         $request->authenticate();
-
-        // Regenerate the session to prevent fixation
         $request->session()->regenerate();
 
         // Transfer session cart to user cart after login
         $cartController = new CartController();
         $cartController->transferSessionCartToUser($request->user()->id);
 
-        // Redirect to intended page or homepage
+        // Check if the user is an admin
+        if ($request->user()->role === 'admin') {
+            return redirect()->intended('/admin');
+        }
+
+        // Redirect to home if not an admin
         return redirect()->intended('/');
     }
 
