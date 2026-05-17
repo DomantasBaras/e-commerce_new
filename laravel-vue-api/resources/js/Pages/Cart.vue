@@ -74,8 +74,8 @@
             <h3>Total: {{cartTotal}} €</h3>
           </div>
           
-          <!-- Place order button -->
-          <primary-button @click="placeOrder">Place Order</primary-button>
+          <!-- Checkout button -->
+          <primary-button @click="goToCheckout">Proceed to Checkout</primary-button>
         </div>
 
         <!-- Message if the cart is empty -->
@@ -92,7 +92,7 @@ import MainLayout from '@/Layouts/MainLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { computed, onMounted } from 'vue';
 import { useCartStore } from '@/Stores/cartStore';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3';
 
 export default {
   components: {
@@ -169,19 +169,12 @@ export default {
       cartStore.addItemToCart(userId.value, item.product_id, item.quantity);
     };
 
-    // Place order function
-    const placeOrder = async () => {
-      if (userId.value) {
-        try {
-          const response = await cartStore.placeOrder(userId.value);
-          alert('Order placed successfully!');
-          window.location.href = route('order.show', { id: response.data.id });
-        } catch (error) {
-          console.error('Error placing order:', error);
-        }
-      } else {
-        alert('Please log in to place an order.');
+    const goToCheckout = () => {
+      if (!userId.value) {
+        router.visit(route('login'));
+        return;
       }
+      router.visit(route('checkout'));
     };
 
     return {
@@ -195,7 +188,7 @@ export default {
       updateCart,
       truncatedDescription,
       toggleDescription,
-      placeOrder,
+      goToCheckout,
     };
   },
 };

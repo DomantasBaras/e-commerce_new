@@ -34,13 +34,12 @@ export default {
   components: {
     MainLayout,
   },
-  setup() {
+  setup(props) {
     const order = ref(null);
     const loading = ref(true);
-    const orderId = 1; // Get this dynamically, for example from route params
 
     onMounted(() => {
-      axios.get(`/api/orders/${orderId}`)
+      axios.get(`/api/orders/${props.id}`)
         .then(response => {
           order.value = response.data;
           loading.value = false;

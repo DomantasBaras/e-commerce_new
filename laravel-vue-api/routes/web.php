@@ -82,6 +82,10 @@ Route::get('/cart', function () {
     return Inertia::render('Cart');
 })->name('cart');
 
+Route::get('/checkout', function () {
+    return Inertia::render('Checkout');
+})->name('checkout')->middleware('auth');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->name('dashboard');

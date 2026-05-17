@@ -15,6 +15,11 @@ class OrderController extends Controller
     // Create a new order
     public function create(Request $request, $userId)
     {
+        $validated = $request->validate([
+            'address'        => 'required|string|max:500',
+            'payment_method' => 'required|string|in:credit_card,paypal,cash_on_delivery',
+        ]);
+
         DB::beginTransaction();
 
         try {
@@ -29,9 +34,12 @@ class OrderController extends Controller
 
             // Create order
             $order = Order::create([
-                'user_id' => $userId,
-                'total' => $cart->items->sum(fn($item) => $item->product->price * $item->quantity),
-                'status' => 'pending',
+                'user_id'        => $userId,
+                'total'          => $cart->items->sum(fn($item) => $item->product->price * $item->quantity),
+                'status'         => 'pending',
+                'address'        => $validated['address'],
+                'payment_method' => $validated['payment_method'],
+                'placed_at'      => now(),
             ]);
 
             // Create order items and update stock

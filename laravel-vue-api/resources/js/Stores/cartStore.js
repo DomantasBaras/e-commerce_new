@@ -84,23 +84,12 @@ export const useCartStore = defineStore('cartStore', {
       }
     },
 
-    // Place order action
-    async placeOrder(userId) {
-      const router = useRouter(); // Use vue-router for navigation
-
-      if (userId) {
-        try {
-          const response = await axios.post(`/api/orders/${userId}`);
-          alert('Order placed successfully!');
-          
-          // Redirect user to order details page
-          router.push({ name: 'order.show', params: { id: response.data.id } });
-        } catch (error) {
-          console.error('Error placing order:', error);
-        }
-      } else {
-        alert('Please log in to place an order.');
-      }
+    async placeOrder(userId, address, paymentMethod) {
+      const response = await axios.post(`/api/orders/${userId}`, {
+        address,
+        payment_method: paymentMethod,
+      });
+      return response.data;
     }
   },
 });
